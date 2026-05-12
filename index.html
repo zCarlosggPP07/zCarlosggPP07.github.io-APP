@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FO-AMB-03: APP DE CONTROL - Indicadores Ambientales</title>
+    <!-- Tailwind CSS para los estilos y diseño responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para las gráficas de consumo -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            light: '#4ade80', // Verde ecológico claro
+                            DEFAULT: '#16a34a', // Verde corporativo
+                            dark: '#14532d', // Verde oscuro
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Navegación Superior -->
+    <nav class="bg-brand-dark text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-leaf text-2xl mr-3 text-brand-light"></i>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-wider">TRANSLAVAL S.A.S.</h1>
+                        <p class="text-xs text-gray-300">SISTEMA DE GESTIÓN AMBIENTAL</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 text-sm font-semibold">
+                    <span class="bg-brand px-3 py-1 rounded-full"><i class="fa-solid fa-file-code mr-1"></i> FO-AMB-03</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Panel de Control: Consumo de Energía Eléctrica</h2>
+            <p class="text-gray-600">Registro mensual, análisis de indicadores y detección de anomalías.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- SECCIÓN: FORMULARIO DE INGRESO (Paso 4) -->
+            <div class="glass-panel rounded-xl shadow-md p-6 lg:col-span-1 border-t-4 border-brand">
+                <h3 class="text-lg font-bold mb-4 border-b pb-2"><i class="fa-solid fa-keyboard mr-2 text-brand"></i>Ingreso de Datos Factura</h3>
+                
+                <form id="dataForm" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Año</label>
+                            <input type="number" id="inputYear" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-brand focus:ring focus:ring-brand focus:ring-opacity-50" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Mes</label>
+                            <select id="inputMonth" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-brand focus:ring focus:ring-brand focus:ring-opacity-50" required>
+                                <option value="01">Enero</option><option value="02">Febrero</option>
+                                <option value="03">Marzo</option><option value="04">Abril</option>
+                                <option value="05">Mayo</option><option value="06">Junio</option>
+                                <option value="07">Julio</option><option value="08">Agosto</option>
+                                <option value="09">Septiembre</option><option value="10">Octubre</option>
+                                <option value="11">Noviembre</option><option value="12">Diciembre</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Consumo Total Facturado (kWh)</label>
+                        <div class="relative mt-1 rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-bolt text-gray-400"></i>
+                            </div>
+                            <input type="number" id="inputKwh" step="0.01" class="block w-full pl-10 rounded-md border-gray-300 p-2 border focus:border-brand focus:ring-brand" required placeholder="Ej. 1500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Costo Total Factura ($ COP)</label>
+                        <div class="relative mt-1 rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="number" id="inputCost" class="block w-full pl-8 rounded-md border-gray-300 p-2 border focus:border-brand focus:ring-brand" required placeholder="Ej. 850000">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Número de Empleados</label>
+                        <input type="number" id="inputEmployees" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-brand focus:ring-brand" required placeholder="Ej. 45">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-brand-dark">Meta Anual Establecida (kWh/Empleado)</label>
+                        <input type="number" id="inputMeta" step="0.01" class="mt-1 block w-full rounded-md border-brand-light shadow-sm p-2 border bg-green-50 focus:border-brand focus:ring-brand" required placeholder="Ej. 35.5">
+                    </div>
+
+                    <button type="submit" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-2 px-4 rounded transition duration-200 shadow-md">
+                        <i class="fa-solid fa-save mr-2"></i> Guardar y Analizar
+                    </button>
+                </form>
+            </div>
+
+            <!-- SECCIÓN: ANÁLISIS E INDICADORES (Paso 4 y 5) -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Tarjetas de Resumen (Último Mes) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-500 uppercase">Indicador Actual</h4>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span id="cardIndicator" class="text-3xl font-bold text-gray-800">0.00</span>
+                            <span class="text-sm text-gray-500">kWh/emp</span>
+                        </div>
+                        <p id="cardVariation" class="text-xs mt-2 font-medium">-</p>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-500 uppercase">Costo por Empleado</h4>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span id="cardCost" class="text-3xl font-bold text-gray-800">$0</span>
+                            <span class="text-sm text-gray-500">COP</span>
+                        </div>
+                    </div>
+
+                    <div id="alertCard" class="p-4 rounded-xl shadow-sm border border-gray-200 bg-gray-50 flex flex-col justify-center items-center text-center transition-colors duration-300">
+                        <i id="alertIcon" class="fa-solid fa-circle-check text-3xl mb-2 text-gray-400"></i>
+                        <h4 id="alertTitle" class="text-sm font-bold text-gray-700">Estado Normal</h4>
+                        <p id="alertDesc" class="text-xs text-gray-600 mt-1">Sin datos recientes</p>
+                    </div>
+                </div>
+
+                <!-- Gráfica -->
+                <div class="glass-panel p-4 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-700"><i class="fa-solid fa-chart-line mr-2"></i>Tendencia del Indicador (kWh / Empleado)</h3>
+                    </div>
+                    <div class="relative h-64 w-full">
+                        <canvas id="energyChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SECCIÓN: HISTORIAL DE REGISTROS -->
+        <div class="mt-8 glass-panel rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+                <h3 class="font-bold text-gray-700"><i class="fa-solid fa-table-list mr-2"></i>Historial de Consumo</h3>
+                <button onclick="exportarCSV()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-700">
+                    <i class="fa-solid fa-download mr-1"></i> Exportar
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100 text-xs text-gray-500 uppercase tracking-wider">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Periodo</th>
+                            <th class="px-6 py-3 text-right">Consumo (kWh)</th>
+                            <th class="px-6 py-3 text-right">Costo ($)</th>
+                            <th class="px-6 py-3 text-center">Empleados</th>
+                            <th class="px-6 py-3 text-right text-brand-dark font-bold">Indicador (kWh/Emp)</th>
+                            <th class="px-6 py-3 text-center">Meta</th>
+                            <th class="px-6 py-3 text-center">Estado (Paso 5)</th>
+                            <th class="px-6 py-3 text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white divide-y divide-gray-200 text-sm">
+                        <!-- Las filas se generan vía JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Inicializar fecha actual en el formulario
+        const today = new Date();
+        document.getElementById('inputYear').value = today.getFullYear();
+        document.getElementById('inputMonth').value = String(today.getMonth() + 1).padStart(2, '0');
+
+        // Variables Globales
+        let energyData = JSON.parse(localStorage.getItem('translaval_energy_data')) || [];
+        let chartInstance = null;
+
+        // Nombres de meses
+        const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+        // Función Principal de Inicialización
+        function initApp() {
+            renderTable();
+            updateDashboard();
+            renderChart();
+        }
+
+        // Manejador del Formulario
+        document.getElementById('dataForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const year = document.getElementById('inputYear').value;
+            const month = document.getElementById('inputMonth').value;
+            const period = `${year}-${month}`;
+            
+            const kwh = parseFloat(document.getElementById('inputKwh').value);
+            const cost = parseFloat(document.getElementById('inputCost').value);
+            const employees = parseInt(document.getElementById('inputEmployees').value);
+            const meta = parseFloat(document.getElementById('inputMeta').value);
+
+            // Cálculos del Indicador (Paso 4)
+            const indicator = kwh / employees;
+
+            const record = {
+                id: period, // Usar periodo como ID único para sobrescribir si se repite
+                year: year,
+                month: month,
+                periodName: `${monthNames[parseInt(month)-1]} ${year}`,
+                kwh: kwh,
+                cost: cost,
+                employees: employees,
+                indicator: indicator,
+                meta: meta,
+                timestamp: new Date().getTime()
+            };
+
+            // Filtrar si ya existe el periodo y reemplazar, o agregar nuevo
+            energyData = energyData.filter(d => d.id !== period);
+            energyData.push(record);
+            
+            // Ordenar cronológicamente
+            energyData.sort((a, b) => a.id.localeCompare(b.id));
+
+            // Guardar en LocalStorage
+            localStorage.setItem('translaval_energy_data', JSON.stringify(energyData));
+
+            // Actualizar UI
+            initApp();
+            
+            // Reset campos numéricos pero mantener meta
+            document.getElementById('inputKwh').value = '';
+            document.getElementById('inputCost').value = '';
+        });
+
+        // Eliminar Registro
+        function deleteRecord(id) {
+            if(confirm('¿Seguro que desea eliminar este registro?')) {
+                energyData = energyData.filter(d => d.id !== id);
+                localStorage.setItem('translaval_energy_data', JSON.stringify(energyData));
+                initApp();
+            }
+        }
+
+        // Formateador de moneda
+        const moneyFormatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+
+        // Actualizar Tabla
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (energyData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500">No hay datos registrados. Ingrese el consumo del mes.</td></tr>`;
+                return;
+            }
+
+            // Calcular promedio histórico para el Paso 5
+            let totalIndicator = 0;
+            energyData.forEach(d => totalIndicator += d.indicator);
+            const historicAvg = totalIndicator / energyData.length;
+
+            energyData.forEach((data, index) => {
+                
+                // Lógica del Paso 5: Aumento injustificado > 10%
+                let isAnomaly = false;
+                let statusHtml = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Óptimo</span>`;
+                
+                // Comparamos con el promedio histórico o el mes anterior según interpretación estricta del paso 5
+                // Aquí usamos el histórico de todos los meses ANTERIORES al actual iterado para ser exactos
+                const prevRecords = energyData.slice(0, index);
+                if(prevRecords.length > 0) {
+                    const avgPrev = prevRecords.reduce((sum, r) => sum + r.indicator, 0) / prevRecords.length;
+                    const increment = ((data.indicator - avgPrev) / avgPrev) * 100;
+                    
+                    if(increment > 10) {
+                        isAnomaly = true;
+                        statusHtml = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 shadow-sm" title="+${increment.toFixed(1)}% vs Promedio"><i class="fa-solid fa-triangle-exclamation mr-1"></i> FO-AMB-04</span>`;
+                    } else if (data.indicator > data.meta) {
+                         statusHtml = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Supera Meta</span>`;
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = isAnomaly ? 'bg-red-50' : 'hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${data.periodName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right">${data.kwh.toLocaleString('es-CO')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500">${moneyFormatter.format(data.cost)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500">${data.employees}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-gray-800">${data.indicator.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500">${data.meta.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">${statusHtml}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        <button onclick="deleteRecord('${data.id}')" class="text-red-500 hover:text-red-700 transition"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Actualizar Tarjetas Resumen
+        function updateDashboard() {
+            if (energyData.length === 0) return;
+
+            const current = energyData[energyData.length - 1];
+            
+            // Update Text
+            document.getElementById('cardIndicator').innerText = current.indicator.toFixed(2);
+            document.getElementById('cardCost').innerText = moneyFormatter.format(current.cost / current.employees);
+            
+            // Configurar si superó la meta
+            document.getElementById('inputMeta').value = current.meta; // Mantener última meta
+
+            const alertCard = document.getElementById('alertCard');
+            const alertIcon = document.getElementById('alertIcon');
+            const alertTitle = document.getElementById('alertTitle');
+            const alertDesc = document.getElementById('alertDesc');
+
+            if (energyData.length > 1) {
+                // Hay histórico
+                const prevRecords = energyData.slice(0, -1);
+                const avgPrev = prevRecords.reduce((sum, r) => sum + r.indicator, 0) / prevRecords.length;
+                const percentChange = ((current.indicator - avgPrev) / avgPrev) * 100;
+
+                const variationEl = document.getElementById('cardVariation');
+                if (percentChange > 0) {
+                    variationEl.innerHTML = `<span class="text-red-500"><i class="fa-solid fa-arrow-trend-up"></i> +${percentChange.toFixed(1)}%</span> vs promedio histórico`;
+                } else {
+                    variationEl.innerHTML = `<span class="text-green-500"><i class="fa-solid fa-arrow-trend-down"></i> ${percentChange.toFixed(1)}%</span> vs promedio histórico`;
+                }
+
+                // Lógica FO-AMB-04 (Paso 5)
+                if (percentChange > 10) {
+                    alertCard.className = "p-4 rounded-xl shadow-sm border border-red-200 bg-red-100 flex flex-col justify-center items-center text-center animate-pulse";
+                    alertIcon.className = "fa-solid fa-triangle-exclamation text-3xl mb-2 text-red-600";
+                    alertTitle.className = "text-sm font-bold text-red-800";
+                    alertTitle.innerText = "¡ANOMALÍA DETECTADA!";
+                    alertDesc.className = "text-xs text-red-700 mt-1 font-medium";
+                    alertDesc.innerHTML = "Consumo incrementó >10%.<br>Requerido <b>FO-AMB-04 Plan de Acción</b>.";
+                } else if (current.indicator > current.meta) {
+                    alertCard.className = "p-4 rounded-xl shadow-sm border border-yellow-200 bg-yellow-50 flex flex-col justify-center items-center text-center";
+                    alertIcon.className = "fa-solid fa-circle-exclamation text-3xl mb-2 text-yellow-500";
+                    alertTitle.className = "text-sm font-bold text-yellow-700";
+                    alertTitle.innerText = "Supera Meta Anual";
+                    alertDesc.className = "text-xs text-yellow-600 mt-1";
+                    alertDesc.innerText = "Revisar prácticas operativas de ahorro.";
+                } else {
+                    alertCard.className = "p-4 rounded-xl shadow-sm border border-green-200 bg-green-50 flex flex-col justify-center items-center text-center";
+                    alertIcon.className = "fa-solid fa-leaf text-3xl mb-2 text-green-500";
+                    alertTitle.className = "text-sm font-bold text-green-700";
+                    alertTitle.innerText = "Eficiencia Óptima";
+                    alertDesc.className = "text-xs text-green-600 mt-1";
+                    alertDesc.innerText = "Consumo dentro de parámetros normales.";
+                }
+            } else {
+                document.getElementById('cardVariation').innerText = "Sin datos previos para comparar";
+                // Reset card a estado neutral
+                 alertCard.className = "p-4 rounded-xl shadow-sm border border-gray-200 bg-gray-50 flex flex-col justify-center items-center text-center";
+                 alertIcon.className = "fa-solid fa-info-circle text-3xl mb-2 text-blue-500";
+                 alertTitle.innerText = "Primer Registro";
+                 alertTitle.className = "text-sm font-bold text-gray-700";
+                 alertDesc.innerText = "Ingrese más meses para generar análisis.";
+            }
+        }
+
+        // Renderizar Gráfica
+        function renderChart() {
+            const ctx = document.getElementById('energyChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            if (energyData.length === 0) return;
+
+            const labels = energyData.map(d => d.periodName);
+            const dataIndicator = energyData.map(d => d.indicator);
+            const dataMeta = energyData.map(d => d.meta);
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Meta Anual',
+                            data: dataMeta,
+                            borderColor: '#ef4444', // Red 500
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.1,
+                            pointRadius: 0
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Indicador Real (kWh/Emp)',
+                            data: dataIndicator,
+                            backgroundColor: '#16a34a', // Brand color
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'kWh / Empleado' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Función para exportar a Excel (CSV)
+        function exportarCSV() {
+            if(energyData.length === 0) {
+                alert("No hay datos para exportar");
+                return;
+            }
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Periodo,Consumo (kWh),Costo (COP),Empleados,Indicador (kWh/Emp),Meta,Estado\r\n";
+            
+            energyData.forEach(row => {
+                let status = "Optimo";
+                if(row.indicator > row.meta) status = "Supera Meta";
+                
+                // Calcular si es anomalía (simplificado para CSV)
+                const rowData = `${row.periodName},${row.kwh},${row.cost},${row.employees},${row.indicator.toFixed(2)},${row.meta},${status}`;
+                csvContent += rowData + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Indicadores_Energia_Translaval.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Ejecutar al cargar
+        window.onload = initApp;
+    </script>
+</body>
+</html>
